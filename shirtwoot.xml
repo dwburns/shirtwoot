@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Module>
+<ModulePrefs height="160" 
+	title="Today's shirt.woot!" 
+	description="This is an iGoogle gadget for fans of woot.com's new shirt-a-day site shirt.woot!. It displays the current t-shirt right on your iGoogle homepage so you're sure not to let a good one slip by. You can easily access product detail (by clicking on the shirt or title) and discussion threads, or click the I want one! link to buy the shirt." 
+	author="Douglas Burns" 
+	author_email="doug+shirtwoot@spacelysgadgets.com" 
+	screenshot="http://gadgets.spacelysgadgets.com/shirtwoot/screenshot.png" 
+	thumbnail="http://gadgets.spacelysgadgets.com/shirtwoot/thumbnail.png" 
+	author_location="Washington, DC" 
+	author_affiliation="Spacely's Gadgets" 
+	author_link="http://www.spacelysgadgets.com"
+	title_url="http://shirt.woot.com" >
+	<Locale lang="en" country="us" />
+	<Require feature="analytics"/>
+</ModulePrefs>
+<Content type="html"><![CDATA[
+<style type="text/css">
+	a {
+		display: block;
+	}
+	
+	#unavailable {
+		display: none;
+	}
+	
+	#available {
+		visibility: hidden;
+	}
+
+	#info {
+		position: absolute;
+		right: 0;
+		z-index: 1;
+		font-family: "Trebuchet MS",Arial,Helvetica,sans-serif;
+		font-style: normal;
+		font-variant: normal;
+		font-weight: normal;
+		line-height: normal;
+		text-align: right;
+		height: 160px;
+	}
+	
+	#infolink, #infolink:visited {
+		text-decoration: none;
+		color: #000;
+	}
+	
+	#title, #price {
+		display: block;
+		color: #000;
+		text-decoration: none;
+	}
+	
+	#title {
+		font-size: 16px;
+		margin: 0;
+		
+	}
+	
+	#price {
+		display: block;
+		font-family: "Arial Black","Trebuchet MS",Arial,Helvetica,sans-serif;
+		font-size: 24px;
+		letter-spacing: -1px;
+		line-height: 18px;
+		font-weight: normal;
+		margin-top: 2px;
+	}
+
+	#image {
+		position: absolute;
+		top: 5px;
+		left: -30px;
+		z-index: -2;
+		width: 200px;
+		height: 151px;
+		border: none;
+	}
+	
+	#imagelink {
+		display: block;
+		position: absolute;
+		z-index: -1;
+		padding: 70px 70px 70px 70px;
+	}
+	
+	#discuss {
+		margin: 8px 0 0 0;
+		font-size: 10px;
+		letter-spacing: 1px;
+		text-decoration: none;
+		text-transform: uppercase;
+		color: #EF7B1D;
+	}
+	
+	#buy {
+		font-weight: bold;
+		font-size: 22px;
+		color: #EF7B1D;
+		margin: 8px 0 0 0 !important;
+	}
+	
+	#soldout {
+		margin: 8px 0 0 0 !important;
+		font-size: 22px;
+		color: #EF7B1D;
+		display: block;
+	}
+</style>
+<!--[if IE]>
+<style type="text/css">
+	#info {
+		position: static;
+	}
+	
+	#imagelink {
+		position: static;
+		padding: 0;
+	}
+</style>
+<![endif]-->
+<div id="available">
+	<a id="imagelink" href="#" target="_top"><img id="image" src="" alt="" /></a>
+	<div id="info">
+		<a id="infolink" href="#" target="_top">
+			<span id="title"></span>
+			<span id="price"></span>
+		</a>
+		<a id="discuss" href="#" target="_top">Discuss</a>
+		<div id="action"></div>
+	</div>
+</div>
+<div id="unavailable">
+	<p>Could not connect to shirt.woot! Please try again shortly.</p>
+</div>
+<script type="text/javascript">
+
+	// http://gadgets.spacelysgadgets.com/shirtwoot/passthrough.php (temp url)
+	// http://shirt.woot.com/salerss.aspx (correct url)
+
+	_IG_FetchXmlContent('http://gadgets.spacelysgadgets.com/shirtwoot/passthrough.php', function(r) {
+	
+		if (r == null || typeof(r) != "object" || r.firstChild == null) {
+			_gel('available').style.display = 'none';
+			_gel('unavailable').style.display = 'block';
+			return;
+		}
+	
+		var title = getValue(r, 'title');
+		var price = getWootValue(r, 'price');
+		var productUrl = getValue(r, 'guid');
+		var comments = getWootValue(r, 'comments');
+		var condition =  getWootValue(r, 'condition');
+		var soldout = getWootValue(r, 'soldout');
+		var purchaseUrl = getWootValue(r, 'purchaseurl');
+		var imageUrl = getWootValue(r, 'standardimage');
+		var discussUrl = getWootValue(r, 'discussionurl');
+
+		
+		var image = _gel('image');
+		image.src = imageUrl;
+		image.alt = title;
+		
+		setContent('title', title);
+		setContent('price', price);
+		
+		var discuss = _gel('discuss');
+		setContent('discuss', 'Discuss (' + comments + ' comments)');
+		discuss.href = discussUrl;
+		
+		// product links
+		_gel('imagelink').href = productUrl;
+		_gel('infolink').href = productUrl;
+		
+		// action link
+		if(soldout != 'True') {
+			setContent('action', '<a id="buy" href="' + purchaseUrl + '" target="_top">I want one!</a>');
+		} else {
+			setContent('action', '<strong id="soldout">sold out!</strong>');
+		}
+		
+		_gel('available').style.visibility = 'visible';
+		
+		_IG_Analytics("UA-2548624-2", "/shirtwoot");
+	}, {refreshInterval: 900});	
+	
+	function getValue(r, n) {
+		return r.getElementsByTagName(n)[0].firstChild.data;
+	}
+	
+	function getWootValue(r, n) {
+		if(navigator.appName == 'Microsoft Internet Explorer') {
+			return r.getElementsByTagName('woot:' + n)[0].firstChild.data;
+		} else {
+			return r.getElementsByTagNameNS('http://www.woot.com/',n)[0].firstChild.data;
+		}
+	}
+	
+	function setContent(e, c) {
+		_gel(e).innerHTML = c;
+	}
+</script>
+]]></Content>
+</Module>
