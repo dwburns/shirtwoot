@@ -1,0 +1,7 @@
+This is the source for a shirt.woot iGoogle gadget that can be installed
+at http://www.google.com/ig/directory?hl=en&url=gadgets.spacelysgadgets.com/shirtwoot/shirtwoot.xml
+
+The main html/javascript source is in shirtwoot.xml
+
+passthrough.php was added to proxy cthe shirt.woot xml feed since at one point requests directly from 
+google were being blocked. Not sure if that's still the case.
